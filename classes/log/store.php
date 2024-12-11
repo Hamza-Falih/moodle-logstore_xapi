@@ -63,6 +63,29 @@ class store extends php_obj implements log_writer {
             return true;
         }
 
+        $logstudentsonly = $this->get_config('logstudentsonly', 1);
+        if ($logstudentsonly) {
+            global $DB, $USER, $COURSE;
+            $context = \context_course::instance($COURSE->id);
+            $isstudent = $DB->record_exists('role_assignments', [
+                'roleid' => 5,
+                'userid' => $USER->id,
+                'contextid' => $context->id
+            ]);
+            /*$systemcontext = \context_system::instance();
+            $userroles = get_user_roles($systemcontext, $USER->id);
+            $isstudent = false;
+            foreach ($userroles as $role) {
+                if ($role->shortname === 'student') {
+                    $isstudent = true;
+                    break;
+                }
+            }*/
+            if (!$isstudent) {
+                return true;
+            }
+        }
+
         $enabledevents = explode(',', $this->get_config('routes', ''));
         $isdisabledevent = !in_array($event->eventname, $enabledevents);
         return $isdisabledevent;

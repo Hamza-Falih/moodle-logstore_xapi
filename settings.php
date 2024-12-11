@@ -141,6 +141,10 @@ if ($hassiteconfig) {
     $settings->add(new admin_setting_configcheckbox('logstore_xapi/logguests',
         get_string('logguests', 'logstore_xapi'), '', '0'));
 
+    $settings->add(new admin_setting_configcheckbox('logstore_xapi/logstudentsonly',
+        get_string('logstudentsonly', 'logstore_xapi'),
+        get_string('logstudentsonly_desc', 'logstore_xapi'), '0'));
+
     $menuroutes = [];
     $eventfunctionmap = \src\transformer\get_event_function_map();
     foreach (array_keys($eventfunctionmap) as $eventname) {
