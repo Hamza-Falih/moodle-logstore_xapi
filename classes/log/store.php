@@ -57,15 +57,16 @@ class store extends php_obj implements log_writer {
      *
      */
     protected function is_event_ignored(event_base $event) {
+        global $DB, $USER, $COURSE;
         $allowguestlogging = $this->get_config('logguests', 1);
         if ((!CLI_SCRIPT || PHPUNIT_TEST) && !$allowguestlogging && isguestuser()) {
             // Always log inside CLI scripts because we do not login there.
             return true;
         }
 
+        // Check if the logstudentsonly is enabled.
         $logstudentsonly = $this->get_config('logstudentsonly', 1);
         if ($logstudentsonly) {
-            global $DB, $USER, $COURSE;
             $context = \context_course::instance($COURSE->id);
             $isstudent = $DB->record_exists('role_assignments', [
                 'roleid' => 5,
@@ -84,6 +85,12 @@ class store extends php_obj implements log_writer {
             if (!$isstudent) {
                 return true;
             }
+        }
+
+        // Check if the xAPI logging is disabled for a course.
+        $customfield = $DB->get_record('customfield_data', ['instanceid' => $COURSE->id]);
+        if (!empty($customfield) && $customfield->value === '0') {
+            return true;
         }
 
         $enabledevents = explode(',', $this->get_config('routes', ''));
